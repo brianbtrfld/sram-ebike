@@ -16,20 +16,14 @@
   <img src="/sram-logo.png" alt="SRAM Logo" class="sram-logo" />
   <h1>Welcome to E-Bike Ride Tracker</h1>
 
-  <div class="ride-buttons">
-    <button class="ride-button chill" on:click={() => startRide('chill')}>
-      <img src="/ebike-chill.jpg" alt="Chill E-Bike" />
-      <div class="button-content">
-        <h2>Chill Ride</h2>
-        <p>Track your daily chill rides</p>
-      </div>
+  <div class="ride-options">
+    <button class="ride-button" on:click={() => startRide('chill')}>
+      <img src="/ebike-chill.jpg" alt="Chill Ride" />
+      <span class="ride-label">Chill Ride</span>
     </button>
-    <button class="ride-button hardcore" on:click={() => startRide('hardcore')}>
-      <img src="/ebike-hardcore.jpg" alt="Hardcore E-Bike" />
-      <div class="button-content">
-        <h2>Hardcore Ride</h2>
-        <p>Track your hardcore adventures</p>
-      </div>
+    <button class="ride-button" on:click={() => startRide('hardcore')}>
+      <img src="/ebike-hardcore.jpg" alt="Hardcore Ride" />
+      <span class="ride-label">Hardcore Ride</span>
     </button>
   </div>
 </main>
@@ -58,27 +52,25 @@
     margin-bottom: 2rem;
   }
 
-  .ride-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  .ride-options {
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
-    max-width: 1000px;
+    align-items: center;
+    max-width: 500px;
+    width: 100%;
     margin: 0 auto;
-    padding: 1rem;
   }
 
   .ride-button {
+    width: 100%;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
+    border: none;
     padding: 0;
-    border-radius: 12px;
-    color: #fff;
-    text-decoration: none;
-    transition: transform 0.2s;
+    cursor: pointer;
+    border-radius: 15px;
     overflow: hidden;
+    transition: transform 0.3s ease;
     aspect-ratio: 16/9;
   }
 
@@ -100,27 +92,28 @@
     transform: scale(1.1);
   }
 
-  .button-content {
-    position: relative;
-    width: 100%;
-    padding: 1.5rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-    z-index: 1;
-  }
-
-  .ride-button h2 {
-    margin: 0;
+  .ride-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
     font-size: 1.5rem;
-  }
-
-  .ride-button p {
-    margin: 0.5rem 0 0;
-    opacity: 0.9;
+    text-align: center;
   }
 
   @media (prefers-color-scheme: dark) {
     .ride-button {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .ride-button {
+      width: 100%;
+      max-width: 400px;
     }
   }
 </style>

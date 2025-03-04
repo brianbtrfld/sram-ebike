@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { invoke } from "@tauri-apps/api/core";
+  import { goto } from '$app/navigation';
   
   interface TelemetryUpdate {
     timestamp: string;
@@ -24,7 +25,15 @@
     distance_miles: 0
   };
   
-  let waypoints: TelemetryUpdate[] = [];
+  let waypoints: TelemetryUpdate[] = Array(6).fill({
+    timestamp: new Date().toISOString(),
+    lat: 0,
+    lon: 0,
+    elevation_ft: 0,
+    avg_speed_mph: 0,
+    battery_percentage: 100,
+    distance_miles: 0
+  });
   let updateInterval: number;
 
   async function initializeRide() {
@@ -46,7 +55,8 @@
         const update = await invoke<TelemetryUpdate>('get_telemetry_update');
         if (update) {
           telemetryData = update;
-          waypoints = [update, ...waypoints].slice(0, 10); // Keep last 10 waypoints
+          // Keep exactly 6 waypoints, shifting out the oldest one
+          waypoints = [update, ...waypoints.slice(0, 5)];
         }
       } catch (error) {
         console.error('Failed to get telemetry update:', error);
@@ -58,19 +68,27 @@
     clearInterval(updateInterval);
     invoke('stop_simulation');
   });
+
+  function goToUpload() {
+    invoke('stop_simulation');
+    goto('/');
+  }
 </script>
 
 <div class="dashboard">
-  <h1 class="ride-title">{rideName}</h1>
+  <div class="header">
+    <h1 class="ride-title">{rideName}</h1>
+    <button class="upload-button" on:click={goToUpload}>Upload</button>
+  </div>
+
+  <div class="start-time">
+    <p class="value date-time">
+      <span class="date">{new Date(rideStartTime).toLocaleDateString()}</span>
+      <span class="time">{new Date(rideStartTime).toLocaleTimeString()}</span>
+    </p>
+  </div>
+  
   <div class="metrics-grid">
-    <div class="metric">
-      <h3>Start Time</h3>
-      <p class="value date-time">
-        <span class="date">{new Date(rideStartTime).toLocaleDateString()}</span>
-        <span class="time">{new Date(rideStartTime).toLocaleTimeString()}</span>
-      </p>
-    </div>
-    
     <div class="metric">
       <h3>Speed</h3>
       <p class="value">{telemetryData.avg_speed_mph.toFixed(1)} <span class="unit">MPH</span></p>
@@ -114,69 +132,109 @@
 
 <style>
   .dashboard {
-    padding: 2rem;
-    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
     min-height: 100vh;
+    background: white;
+    color: #333;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    margin-bottom: 2rem;
+  }
+
+  .upload-button {
+    background: #e31837;
     color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .upload-button:hover {
+    background: #c41430;
   }
 
   .ride-title {
+    font-size: 2rem;
+    color: #333;
+    margin: 0;
+  }
+
+  .start-time {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 12px;
     text-align: center;
-    margin-bottom: 2rem;
-    color: #fff;
-    font-size: 2.5rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
   .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 1000px;
   }
 
   .metric {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
+    background: #f5f5f5;
+    padding: 1rem;
     border-radius: 12px;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
   .metric h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    color: #888;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    color: #666;
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
 
   .value {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     margin: 0;
-    color: #fff;
+    color: #333;
   }
 
   .unit {
-    font-size: 1rem;
-    color: #888;
+    font-size: 0.8rem;
+    color: #666;
   }
 
   .battery-indicator {
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
     position: relative;
     overflow: hidden;
   }
 
   .battery-level {
     height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    background: linear-gradient(90deg, #e31837, #ff4d6a);
     transition: width 0.3s ease;
   }
 
   .battery-level.low {
-    background: linear-gradient(90deg, #f44336, #ff9800);
+    background: linear-gradient(90deg, #ff9800, #ff4d00);
   }
 
   .battery-text {
@@ -185,88 +243,136 @@
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
+    font-size: 0.9rem;
     font-weight: bold;
+    color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-
-  .waypoints-section {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
-  .waypoints-section h2 {
-    margin: 0 0 1rem 0;
-    font-size: 1.5rem;
-    color: #fff;
-  }
-
-  .waypoints-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .waypoint {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    font-family: monospace;
-    transition: background-color 0.3s ease;
-  }
-
-  .waypoint.current {
-    background: rgba(76, 175, 80, 0.2);
-  }
-
-  .waypoint-time {
-    color: #888;
-  }
-
-  .waypoint-coords {
-    text-align: center;
-  }
-
-  .waypoint-elevation {
-    text-align: right;
   }
 
   .date-time {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    font-size: 2rem;
+    gap: 0.3rem;
+    align-items: center;
+    font-size: 1.5rem;
   }
 
   .date {
-    font-size: 1.5rem;
-    color: #888;
-  }
-
-  .time {
+    font-size: 2rem;
+    color: #333;
     font-weight: bold;
   }
 
+  .time {
+    font-size: 1.2rem;
+    color: #666;
+  }
+
+  .waypoints-section {
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 1rem;
+    width: 100%;
+    max-width: 1000px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .waypoints-section h2 {
+    margin: 0 0 0.8rem 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .waypoints-list {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 0.4rem;
+  }
+
+  .waypoint {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 0.8rem;
+    padding: 0.8rem;
+    background: white;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    border: 1px solid #eee;
+  }
+
+  .waypoint.current {
+    background: rgba(227, 24, 55, 0.1);
+    border-color: #e31837;
+  }
+
+  .waypoint-time {
+    color: #666;
+  }
+
+  .waypoint-coords {
+    text-align: center;
+    color: #333;
+  }
+
+  .waypoint-elevation {
+    text-align: right;
+    color: #333;
+  }
+
   @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .ride-title {
+      text-align: center;
+    }
+
     .metrics-grid {
       grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
     }
 
     .value {
-      font-size: 2rem;
-    }
-
-    .date-time {
       font-size: 1.5rem;
     }
 
-    .date {
+    .date-time {
       font-size: 1.2rem;
+    }
+
+    .date {
+      font-size: 1.8rem;
+    }
+
+    .time {
+      font-size: 1rem;
+    }
+
+    .waypoint {
+      font-size: 0.8rem;
+      padding: 0.6rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .dashboard {
+      padding: 1rem;
+    }
+
+    .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .date {
+      font-size: 1.5rem;
+    }
+
+    .time {
+      font-size: 0.9rem;
     }
   }
 </style>
