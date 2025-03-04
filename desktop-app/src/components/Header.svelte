@@ -1,14 +1,14 @@
 <script lang="ts">
     export let rideName: string;
     export let goToUpload: () => void;
-  </script>
+</script>
   
-  <div class="header">
+<div class="header">
     <h1 class="ride-title">{rideName}</h1>
     <button class="upload-button" on:click={goToUpload}>Upload</button>
-  </div>
+</div>
   
-  <style>
+<style>
     .header {
       display: flex;
       justify-content: space-between;
@@ -38,4 +38,4 @@
       color: #333;
       margin: 0;
     }
-  </style>
+</style>

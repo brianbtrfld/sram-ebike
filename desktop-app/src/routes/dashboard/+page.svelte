@@ -42,7 +42,6 @@
 
   async function initializeRide() {
     try {
-      // Get the ride data to access the start time and name
       const rideData = await invoke<{ start_time: string, name: string }>('get_ride_data');
       rideStartTime = rideData.start_time;
       rideName = rideData.name;
@@ -50,32 +49,60 @@
       console.error('Failed to get ride data:', error);
     }
   }
-  
-  onMount(async () => {
-    await initializeRide();
-    
+
+  function initializeUpdateInterval() {
     updateInterval = setInterval(async () => {
       try {
         const update = await invoke<TelemetryUpdate>('get_telemetry_update');
         if (update) {
           telemetryData = update;
-          // Keep exactly 6 waypoints, shifting out the oldest one
           waypoints = [update, ...waypoints.slice(0, 5)];
         }
       } catch (error) {
         console.error('Failed to get telemetry update:', error);
       }
     }, 50);
+  }
+  
+  onMount(async () => {
+    await initializeRide();
+    initializeUpdateInterval();
   });
 
   onDestroy(() => {
-    clearInterval(updateInterval);
-    invoke('stop_simulation');
+    if (updateInterval) {
+      clearInterval(updateInterval);
+      updateInterval = undefined;
+    }
   });
 
-  function goToUpload() {
-    invoke('stop_simulation');
-    goto('/');
+  async function goToUpload() {
+    try {
+      // First stop the update interval but don't clear simulation yet
+      if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = undefined;
+      }
+
+      // Try to upload first - this will use the existing simulation data
+      const response = await invoke<string>('upload_ride');
+      
+      // Only after successful upload, stop the simulation
+      await invoke('stop_simulation');
+      
+      // Show success and navigate home
+      alert('Success: ' + response);
+      goto('/');
+      
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload ride: ' + error);
+      
+      // Restart updates if we failed
+      if (!updateInterval) {
+        initializeUpdateInterval();
+      }
+    }
   }
 </script>
 

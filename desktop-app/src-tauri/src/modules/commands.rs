@@ -1,6 +1,7 @@
 use crate::modules::models::RideData;
 use crate::modules::simulator::TelemetrySimulator;
 use std::sync::Mutex;
+use reqwest::blocking::Client;
 
 pub static SIMULATOR: Mutex<Option<TelemetrySimulator>> = Mutex::new(None);
 
@@ -53,4 +54,33 @@ pub fn stop_simulation() -> Result<String, String> {
     let mut sim_lock = SIMULATOR.lock().map_err(|e| e.to_string())?;
     *sim_lock = None;
     Ok("Simulation stopped".to_string())
+}
+
+#[tauri::command]
+pub fn upload_ride() -> Result<String, String> {
+    let sim_lock = SIMULATOR.lock().map_err(|e| e.to_string())?;
+    
+    if let Some(simulator) = &*sim_lock {
+        // Clone the ride data while keeping simulator active
+        let ride_data = simulator.ride_data.clone();
+        
+        // Upload the data while keeping simulation active
+        let client = Client::new();
+        let response = client
+            .post("http://127.0.0.1:8000/api/rides/upload")
+            .json(&ride_data)
+            .send()
+            .map_err(|e| e.to_string())?;
+            
+        let status = response.status();
+        
+        if status.is_success() {
+            Ok("Ride uploaded successfully".to_string())
+        } else {
+            let error_text = response.text().unwrap_or_else(|_| status.to_string());
+            Err(format!("Upload failed: {}", error_text))
+        }
+    } else {
+        Err("No active simulation to upload".to_string())
+    }
 }
