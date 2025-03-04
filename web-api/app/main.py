@@ -1,22 +1,18 @@
-from typing import Union, List
-from pydantic import BaseModel
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes import api, web
 
 app = FastAPI()
 
-class Item(BaseModel):
-    name: str
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:*", "tauri://localhost"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# In-memory storage for uploaded items
-items_store = []
-
-@app.get("/api/")
-def default():
-    # Return the in-memory items
-    return {"items": items_store}
-
-@app.post("/api/upload")
-def upload(item: Item):
-    # Store the item in the in-memory structure
-    items_store.append(item.dict())
-    return {"name": item.name, "status": "stored"}
+# Include routers
+app.include_router(web.router)
+app.include_router(api.router)
