@@ -1,5 +1,6 @@
 <script>
   import { invoke } from "@tauri-apps/api/core";
+  import { goto } from '$app/navigation';
 
   let name = $state("");
   let greetMsg = $state("");
@@ -55,206 +56,116 @@
     }
   }
 
+  async function startRide(type) {
+    try {
+      await invoke('start_simulation', { rideType: type });
+      goto('/dashboard');
+    } catch (error) {
+      console.error('Failed to start simulation:', error);
+    }
+  }
+
   // Fetch items on initial load
   fetchItems();
 </script>
 
-<main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
-
-  <div class="row">
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank">
-      <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-    </a>
-    <a href="https://kit.svelte.dev" target="_blank">
-      <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />
-    </a>
-  </div>
-  <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
-
-  <!-- Ride Info Section -->
-  <div class="section">
-    <h2>Ride Information</h2>
-    <button onclick={readRideChill}>Load Ride Info</button>
-    {#if rideInfo.name}
-      <div class="info-box">
-        <p>Ride Name: <strong>{rideInfo.name}</strong></p>
-        <p>Number of Waypoints: <strong>{rideInfo.waypoints}</strong></p>
-      </div>
-    {/if}
+<main>
+  <div class="logo-container">
+    <img src="/sram-logo.png" alt="SRAM Logo" class="sram-logo" />
   </div>
 
-  <!-- Original form section -->
-  <div class="section">
-    <form class="row" onsubmit={e => { e.preventDefault(); greet(e); }}>
-      <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{greetMsg}</p>
+  <h1>Choose Your Ride</h1>
 
-    <div class="row" style="margin-top: 20px;">
-      <button onclick={uploadName}>Upload Name to API</button>
-    </div>
-    <p>{uploadResponse}</p>
-  </div>
+  <div class="ride-options">
+    <button class="ride-button" on:click={() => startRide('chill')}>
+      <img src="/ebike-chill.jpg" alt="Chill Ride" />
+      <span class="ride-label">Chill Ride</span>
+    </button>
 
-  <!-- Display items from the API -->
-  <div class="section">
-    <h2>Items from API</h2>
-    {#if items.length === 0}
-      <p>No items available</p>
-    {:else}
-      <ul style="list-style-type: none; padding: 0;">
-        {#each items as item}
-          <li style="margin: 5px 0;">{item.name}</li>
-        {/each}
-      </ul>
-    {/if}
+    <button class="ride-button" on:click={() => startRide('hardcore')}>
+      <img src="/ebike-hardcore.jpg" alt="Hardcore Ride" />
+      <span class="ride-label">Hardcore Ride</span>
+    </button>
   </div>
 </main>
 
 <style>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.svelte-kit:hover {
-  filter: drop-shadow(0 0 2em #ff3e00);
-}
-
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    min-height: 100vh;
+    background: #1a1a1a;
+    color: white;
   }
 
-  a:hover {
-    color: #24c8db;
+  .logo-container {
+    margin-bottom: 2rem;
   }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+  .sram-logo {
+    max-width: 300px;
+    height: auto;
   }
-  button:active {
-    background-color: #0f0f0f69;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    color: #fff;
   }
-}
 
-.section {
-  margin: 2rem 0;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-}
+  .ride-options {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    width: 100%;
+  }
 
-.info-box {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: rgba(36, 200, 219, 0.1);
-}
+  .ride-button {
+    position: relative;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    width: 400px;
+    background: transparent;
+  }
 
-.info-box p {
-  margin: 0.5rem 0;
-}
+  .ride-button:hover {
+    transform: scale(1.02);
+  }
 
-h2 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
+  .ride-button img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+  }
+
+  .ride-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 1.5rem;
+    text-align: center;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+  }
+
+  @media (max-width: 900px) {
+    .ride-button {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
 </style>
