@@ -20,7 +20,7 @@
         class:low={telemetryData.battery_percentage < 20}
         style="width: {telemetryData.battery_percentage}%"
       ></div>
-      <p class="battery-text">{telemetryData.battery_percentage.toFixed(1)}%</p>
+      <p class="battery-text">{Math.round(telemetryData.battery_percentage)}%</p>
     </div>
   </div>
 
