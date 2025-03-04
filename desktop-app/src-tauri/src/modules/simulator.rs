@@ -1,39 +1,10 @@
-use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use crate::modules::models::{RideData, TelemetryUpdate};
 use std::time::SystemTime;
 
 const EARTH_RADIUS_MILES: f64 = 3959.0; // Earth's radius in miles
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Waypoint {
-    pub timestamp: String,
-    pub lat: Option<f64>,
-    pub lon: Option<f64>,
-    pub elevation_ft: Option<f64>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RideData {
-    pub name: String,
-    pub start_time: String,
-    pub end_time: String,
-    pub number_waypoints: usize,
-    pub waypoints: Vec<Waypoint>,
-}
-
-#[derive(Debug, Serialize)]
-pub struct TelemetryUpdate {
-    pub timestamp: String,
-    pub lat: f64,
-    pub lon: f64,
-    pub elevation_ft: f64,
-    pub avg_speed_mph: f64,
-    pub battery_percentage: f64,
-    pub distance_miles: f64,
-}
-
 pub struct TelemetrySimulator {
-    ride_data: RideData,
+    pub ride_data: RideData, // Make this field public
     current_index: usize,
     battery_level: f64,
     distance: f64,
@@ -154,17 +125,4 @@ impl TelemetrySimulator {
         let drain_rate = 0.005 * (1.0 + speed_factor);
         self.battery_level = (self.battery_level - drain_rate).max(0.0);
     }
-}
-
-// Static storage for the active simulator
-pub static SIMULATOR: Mutex<Option<TelemetrySimulator>> = Mutex::new(None);
-
-#[tauri::command]
-pub fn get_ride_data() -> Option<RideData> {
-    if let Ok(sim) = SIMULATOR.lock() {
-        if let Some(simulator) = &*sim {
-            return Some(simulator.ride_data.clone());
-        }
-    }
-    None
 }
