@@ -13,6 +13,7 @@
   }
   
   let rideStartTime = '';
+  let rideName = '';
   let telemetryData: TelemetryUpdate = {
     timestamp: new Date().toISOString(),
     lat: 0,
@@ -28,9 +29,10 @@
 
   async function initializeRide() {
     try {
-      // Get the ride data to access the start time
-      const rideData = await invoke<{ start_time: string }>('get_ride_data');
+      // Get the ride data to access the start time and name
+      const rideData = await invoke<{ start_time: string, name: string }>('get_ride_data');
       rideStartTime = rideData.start_time;
+      rideName = rideData.name;
     } catch (error) {
       console.error('Failed to get ride data:', error);
     }
@@ -59,10 +61,14 @@
 </script>
 
 <div class="dashboard">
+  <h1 class="ride-title">{rideName}</h1>
   <div class="metrics-grid">
     <div class="metric">
       <h3>Start Time</h3>
-      <p class="value">{new Date(rideStartTime).toLocaleTimeString()}</p>
+      <p class="value date-time">
+        <span class="date">{new Date(rideStartTime).toLocaleDateString()}</span>
+        <span class="time">{new Date(rideStartTime).toLocaleTimeString()}</span>
+      </p>
     </div>
     
     <div class="metric">
@@ -112,6 +118,13 @@
     background: #1a1a1a;
     min-height: 100vh;
     color: white;
+  }
+
+  .ride-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #fff;
+    font-size: 2.5rem;
   }
 
   .metrics-grid {
@@ -223,6 +236,22 @@
     text-align: right;
   }
 
+  .date-time {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 2rem;
+  }
+
+  .date {
+    font-size: 1.5rem;
+    color: #888;
+  }
+
+  .time {
+    font-weight: bold;
+  }
+
   @media (max-width: 768px) {
     .metrics-grid {
       grid-template-columns: 1fr 1fr;
@@ -230,6 +259,14 @@
 
     .value {
       font-size: 2rem;
+    }
+
+    .date-time {
+      font-size: 1.5rem;
+    }
+
+    .date {
+      font-size: 1.2rem;
     }
   }
 </style>

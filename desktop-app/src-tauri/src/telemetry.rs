@@ -37,7 +37,6 @@ pub struct TelemetrySimulator {
     current_index: usize,
     battery_level: f64,
     distance: f64,
-    last_update: SystemTime,
 }
 
 impl TelemetrySimulator {
@@ -47,7 +46,6 @@ impl TelemetrySimulator {
             current_index: 0,
             battery_level: 100.0,
             distance: 0.0,
-            last_update: SystemTime::now(),
         }
     }
 

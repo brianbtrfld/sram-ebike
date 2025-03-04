@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "desktop-app",
+        "title": "E-Bike Telemetry App",
         "width": 800,
-        "height": 600
+        "height": 800
       }
     ],
     "security": {
