@@ -129,12 +129,12 @@ class RideSummaryCalculator:
 
         # Validate all waypoint data
         for w in waypoints:
-            cls.validate_coordinates(w.latitude, w.longitude)
+            cls.validate_coordinates(w.lat, w.lon)
         cls.validate_timestamps(waypoints)
 
         total_distance = 0
         total_elevation_gain = 0
-        speeds: List[float] = []
+        segment_speeds: List[float] = []
 
         # Sort waypoints by timestamp
         sorted_waypoints = sorted(waypoints, key=lambda w: cls.parse_timestamp(w.timestamp))
@@ -166,31 +166,32 @@ class RideSummaryCalculator:
             
             # Distance calculation
             distance = cls.calculate_distance(
-                prev.latitude, prev.longitude,
-                curr.latitude, curr.longitude
+                prev.lat, prev.lon,
+                curr.lat, curr.lon
             )
             total_distance += distance
 
             # Elevation gain (only positive changes)
-            elev_change = curr.elevation - prev.elevation
+            elev_change = curr.elevation_ft - prev.elevation_ft
             if elev_change > 0:
                 total_elevation_gain += elev_change
 
-            # Speed calculation
+            # Speed calculation for segment
             time_diff = (cls.parse_timestamp(curr.timestamp) - 
                         cls.parse_timestamp(prev.timestamp)).total_seconds() / 3600  # Convert to hours
             if time_diff > 0:
                 speed = distance / time_diff
-                speeds.append(speed)
+                segment_speeds.append(speed)
 
-        # If no speeds were calculated (all waypoints at same time), use 0
-        if not speeds:
-            speeds = [0]
+        # Calculate average speed from total distance and total time
+        total_time_hours = elapsed_seconds / 3600
+        average_speed = total_distance / total_time_hours if total_time_hours > 0 else 0
+        max_speed = max(segment_speeds) if segment_speeds else 0
 
         return RideSummary(
             total_distance_mi=round(total_distance, 2),
             total_elevation_gain_ft=round(total_elevation_gain, 1),
-            average_speed_mph=round(sum(speeds) / len(speeds), 1),
-            max_speed_mph=round(max(speeds), 1),
+            average_speed_mph=round(average_speed, 1),
+            max_speed_mph=round(max_speed, 1),
             elapsed_time=elapsed_time
         )

@@ -18,15 +18,15 @@ def ride_service():
 def test_waypoints():
     return [
         {
-            "latitude": 37.774929,
-            "longitude": -122.419416,
-            "elevation": 100.0,
+            "lat": 37.774929,
+            "lon": -122.419416,
+            "elevation_ft": 100.0,
             "timestamp": "2024-03-15T10:00:00Z"
         },
         {
-            "latitude": 37.775929,
-            "longitude": -122.429416,
-            "elevation": 110.0,
+            "lat": 37.775929,
+            "lon": -122.429416,
+            "elevation_ft": 110.0,
             "timestamp": "2024-03-15T10:05:00Z"
         }
     ]

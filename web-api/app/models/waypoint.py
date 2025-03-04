@@ -2,10 +2,11 @@ from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 class Waypoint(BaseModel):
-    latitude: float
-    longitude: float
-    elevation: float
     timestamp: str
+    lat: float
+    lon: float
+    elevation_ft: float
+    
 
     @field_validator('timestamp')
     @classmethod

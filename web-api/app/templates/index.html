@@ -165,8 +165,8 @@
                     <strong>Waypoints:</strong>
                     {% for waypoint in ride_info.ride.waypoints %}
                     <div class="waypoint-item">
-                        Location: {{ "%.6f"|format(waypoint.latitude) }}, {{ "%.6f"|format(waypoint.longitude) }}<br>
-                        Elevation: {{ "%.1f"|format(waypoint.elevation) }} ft<br>
+                        Location: {{ "%.6f"|format(waypoint.lat) }}, {{ "%.6f"|format(waypoint.lon) }}<br>
+                        Elevation: {{ "%.1f"|format(waypoint.elevation_ft) }} ft<br>
                         Time: {{ waypoint.format_timestamp() }}
                     </div>
                     {% endfor %}
