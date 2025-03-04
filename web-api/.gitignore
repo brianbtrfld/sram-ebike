@@ -1,0 +1,67 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual environments
+env/
+venv/
+ENV/
+ENV.bak/
+venv.bak/
+
+# VS Code
+.vscode/
+
+# Pytest
+.cache/
+*.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.env.*
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+*.db
+
+# Static files
+staticfiles/
+
+# Media files
+media/
+
+# Docker
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.env
+*.env.*
+!.env.example
+Dockerfile
+docker-compose.yml
+
+# FastAPI
+*.db
+*.sqlite3
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+instance/
+.webassets-cache
