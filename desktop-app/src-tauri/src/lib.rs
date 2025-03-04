@@ -1,3 +1,5 @@
+use std::fs;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -47,11 +49,20 @@ async fn get_items() -> Result<serde_json::Value, String> {
     }
 }
 
+#[tauri::command]
+fn read_ride_chill() -> Result<serde_json::Value, String> {
+    let file_content = fs::read_to_string("resources/rides/ride-chill.json")
+        .map_err(|e| e.to_string())?;
+    
+    serde_json::from_str(&file_content)
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, upload_name, get_items])
+        .invoke_handler(tauri::generate_handler![greet, upload_name, get_items, read_ride_chill])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

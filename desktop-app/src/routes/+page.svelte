@@ -4,6 +4,7 @@
   let name = $state("");
   let greetMsg = $state("");
   let uploadResponse = $state("");
+  let rideInfo = $state({ name: "", waypoints: 0 });
   /** @type {Array<{name: string}>} */
   let items = $state([]);
 
@@ -41,6 +42,19 @@
     }
   }
 
+  async function readRideChill() {
+    try {
+      const data = await invoke("read_ride_chill");
+      rideInfo = {
+        name: data.name || "No name",
+        waypoints: data.waypoints?.length || 0
+      };
+    } catch (error) {
+      console.error("Error reading ride file:", error);
+      rideInfo = { name: "", waypoints: 0 };
+    }
+  }
+
   // Fetch items on initial load
   fetchItems();
 </script>
@@ -61,20 +75,34 @@
   </div>
   <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={e => { e.preventDefault(); greet(e); }}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
-  </form>
-  <p>{greetMsg}</p>
-
-  <!-- Updated event syntax -->
-  <div class="row" style="margin-top: 20px;">
-    <button onclick={uploadName}>Upload Name to API</button>
+  <!-- Ride Info Section -->
+  <div class="section">
+    <h2>Ride Information</h2>
+    <button onclick={readRideChill}>Load Ride Info</button>
+    {#if rideInfo.name}
+      <div class="info-box">
+        <p>Ride Name: <strong>{rideInfo.name}</strong></p>
+        <p>Number of Waypoints: <strong>{rideInfo.waypoints}</strong></p>
+      </div>
+    {/if}
   </div>
-  <p>{uploadResponse}</p>
+
+  <!-- Original form section -->
+  <div class="section">
+    <form class="row" onsubmit={e => { e.preventDefault(); greet(e); }}>
+      <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
+      <button type="submit">Greet</button>
+    </form>
+    <p>{greetMsg}</p>
+
+    <div class="row" style="margin-top: 20px;">
+      <button onclick={uploadName}>Upload Name to API</button>
+    </div>
+    <p>{uploadResponse}</p>
+  </div>
 
   <!-- Display items from the API -->
-  <div style="margin-top: 20px;">
+  <div class="section">
     <h2>Items from API</h2>
     {#if items.length === 0}
       <p>No items available</p>
@@ -207,4 +235,26 @@ button {
   }
 }
 
+.section {
+  margin: 2rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.info-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: rgba(36, 200, 219, 0.1);
+}
+
+.info-box p {
+  margin: 0.5rem 0;
+}
+
+h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
 </style>
