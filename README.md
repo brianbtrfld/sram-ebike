@@ -1,6 +1,8 @@
 # E-Bike Telemetry App
-
 This project provides a complete solution for processing and visualizing e-bike telemetry data. It consists of a web API backend and a desktop application frontend.
+
+## Overview
+The Tauri `desktop-app` allows the user to select two different rides stored as static JSON files.  The rides represent actual GPX files converted to a simpler JSON format using the Python `utils-gpx` project.  The ride dashboard is a simulation but includes calculations based on the ride JSON input.  The dashboard Upload ride button uploads the complete ride JSON input to the `web-api` project where a summary is generated and stored in-memory with the ride and waypoints.
 
 ## Main Components
 
