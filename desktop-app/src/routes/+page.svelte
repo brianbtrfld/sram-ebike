@@ -3,12 +3,46 @@
 
   let name = $state("");
   let greetMsg = $state("");
+  let uploadResponse = $state("");
+  /** @type {Array<{name: string}>} */
+  let items = $state([]);
 
+  /**
+   * @param {Event} event - The submit event
+   */
   async function greet(event) {
-    event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     greetMsg = await invoke("greet", { name });
   }
+
+  async function fetchItems() {
+    try {
+      // Get items from the API - now returns parsed JSON directly
+      const response = await invoke("get_items");
+      items = response.items || [];
+      console.log("Fetched items:", items);
+      return response;
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      return { items: [] };
+    }
+  }
+
+  async function uploadName() {
+    try {
+      // Call our Rust command instead of using fetch directly
+      const response = await invoke("upload_name", { name });
+      uploadResponse = `Upload success! Server responded with: ${response}`;
+
+      // After successful upload, fetch the updated list of items
+      await fetchItems();
+    } catch (error) {
+      uploadResponse = `Error: ${error}`;
+    }
+  }
+
+  // Fetch items on initial load
+  fetchItems();
 </script>
 
 <main class="container">
@@ -27,11 +61,31 @@
   </div>
   <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={greet}>
+  <form class="row" onsubmit={e => { e.preventDefault(); greet(e); }}>
     <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
     <button type="submit">Greet</button>
   </form>
   <p>{greetMsg}</p>
+
+  <!-- Updated event syntax -->
+  <div class="row" style="margin-top: 20px;">
+    <button onclick={uploadName}>Upload Name to API</button>
+  </div>
+  <p>{uploadResponse}</p>
+
+  <!-- Display items from the API -->
+  <div style="margin-top: 20px;">
+    <h2>Items from API</h2>
+    {#if items.length === 0}
+      <p>No items available</p>
+    {:else}
+      <ul style="list-style-type: none; padding: 0;">
+        {#each items as item}
+          <li style="margin: 5px 0;">{item.name}</li>
+        {/each}
+      </ul>
+    {/if}
+  </div>
 </main>
 
 <style>
